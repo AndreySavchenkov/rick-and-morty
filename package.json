@@ -2,7 +2,7 @@
   "name": "rick-and-morty",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://AndreySavchenkov.github.io/rickAndMorty",
+  "homepage": "https://AndreySavchenkov.github.io/rick-and-morty",
   "dependencies": {
     "@reduxjs/toolkit": "^1.8.5",
     "@testing-library/jest-dom": "^5.14.1",
