@@ -44,7 +44,7 @@ const Pagination: FC<PaginationType> = ({ query, totalPages, setQuery, setSearch
   return (
     <Root>
       <Button onClick={prevPageHandler}><ArrowLeft width={24} height={24} />Prev</Button>
-      <PagesContainer>{currentPage}/{totalPages}</PagesContainer>
+      <PagesContainer>{currentPage} / {totalPages}</PagesContainer>
       <StyledButton onClick={nextPageHandler}>Next<ArrowRight width={24} height={24} /></StyledButton>
     </Root>
   )
@@ -59,6 +59,7 @@ const PagesContainer = styled.div`
   width: 60px;
   height: 60px;
   border-radius: 50%;
+  font-weight: 600;
   border: 1px solid ${colors.hoverColor};
 `;
 

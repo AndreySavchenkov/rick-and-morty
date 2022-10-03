@@ -22,6 +22,7 @@ const Character: FC<CharacterType> = ({ name, image, gender, status, location, s
 
   const isAlive = status === Statuses.ALIVE;
   const textStatus = status === Statuses.UNKNOWN ? 'No Idea' : status;
+
   return (
     <Root>
       <StyledImg src={image} alt='character' />
@@ -94,16 +95,35 @@ const Content = styled.div`
   padding: 16px;
   border-radius: 0 20px 20px 0;
   background-color: ${colors.backgroundColor};
+
+  @media (max-width: 530px) {
+    width: 220px;
+    gap: 16px;
+    border-radius: 0 0 20px 20px;
+  }
 `;
 
 const StyledImg = styled.img`
   width: 220px;
   height: 220px;
   border-radius: 20px 0 0 20px;
+  
+  @media (max-width: 530px) {
+    border-radius: 20px 20px 0 0;
+  }
 `;
 
 const Root = styled.div`
   display: flex;
   max-width: 600px;
+  max-height: 220px;
   width: 100%;
+  overflow: hidden;
+
+  @media (max-width: 530px) {
+    flex-direction: column;
+    width: 220px;
+    margin: 0 auto;
+    max-height: 100%;
+  }
 `;

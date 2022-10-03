@@ -1,4 +1,4 @@
-import RickAndMorty from 'assets/icons/RickAndMorty';
+import RickAndMortyIcon from 'assets/icons/RickAndMorty';
 import { Character, Pagination } from 'components';
 import React, { FC, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -42,13 +42,16 @@ const Characters: FC = () => {
 
   return (
     <Root>
-      <RickAndMorty />
+      <LogoContainer>
+        <RickAndMortyIcon />
+      </LogoContainer>
       <Form onSubmit={handleSubmit(onSubmit)}>
-        <Controller control={control} name='name' render={({ field }) => (
+        <InnerContainer>
+          <Controller control={control} name='name' render={({ field }) => (
           <Input type='text' placeholder='Search by name..' {...field} />
         )} />
         <Controller control={control} name='status' render={({ field }) => (
-          <>
+          <RadioContainer>
             <StyledLabel>
               All
               <input {...field} type='radio' value='' />
@@ -65,8 +68,10 @@ const Characters: FC = () => {
               Dead
               <input {...field} type='radio' value='dead' />
             </StyledLabel>
-          </>
+          </RadioContainer>
         )} />
+        </InnerContainer>
+        
         <Button type='submit'>Search</Button>
       </Form>
       <Pagination query={query} totalPages={totalPages} setQuery={setQuery} setSearchParams={setSearchParams} />
@@ -81,6 +86,25 @@ const Characters: FC = () => {
 }
 
 export default Characters;
+
+const RadioContainer = styled.div`
+  display: flex;
+  gap: 10px;
+
+  @media (max-width: 530px) {
+    justify-content: center;
+  }
+`;
+
+const InnerContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const LogoContainer = styled.div`
+  padding: 20px;
+`;
 
 const StyledLabel = styled.label`
   color: ${colors.lightTextColor};
@@ -108,10 +132,15 @@ const Button = styled.button`
     padding: 4px 9px;
     border: 1px solid ${colors.lightTextColor};
   }
+
+  @media (max-width: 530px) {
+    height: 42px;
+  }
 `;
 
 const Input = styled.input`
   border-radius: 10px;
+  height: 32px;
   padding: 5px 10px;
   color: ${colors.lightTextColor};
   background-color: ${colors.backgroundColor};
@@ -126,10 +155,15 @@ const Input = styled.input`
 
 const Form = styled.form`
   display: flex;
-  margin-top: 20px;
+  margin: 20px 0 40px;
   width: 100%;
-  gap: 10px;
+  gap: 16px;
   justify-content: center;
+
+  @media (max-width: 530px) {
+    flex-direction: column;
+    padding: 0 10px;
+  }
 `;
 
 const Loading = styled.span`
@@ -148,6 +182,10 @@ const ItemsContainer = styled.div`
   
   @media (max-width: 1260px) {
     justify-content: center;
+  }
+  @media (max-width: 650px) {
+    flex-direction: column;
+    padding: 10px;
   }
 `;
 
