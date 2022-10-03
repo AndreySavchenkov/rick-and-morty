@@ -1,6 +1,6 @@
-import React, { FC } from 'react'
-import styled, { css } from 'styled-components';
-import { colors } from 'styles';
+import React, {FC} from 'react'
+import styled, {css} from 'styled-components';
+import {colors} from 'styles';
 
 type CharacterType = {
   name: string;
@@ -18,18 +18,18 @@ enum Statuses {
   UNKNOWN = 'unknown'
 }
 
-const Character: FC<CharacterType> = ({ name, image, gender, status, location, species, type }) => {
+const Character: FC<CharacterType> = ({name, image, gender, status, location, species, type}) => {
 
   const isAlive = status === Statuses.ALIVE;
   const textStatus = status === Statuses.UNKNOWN ? 'No Idea' : status;
 
   return (
     <Root>
-      <StyledImg src={image} alt='character' />
+      <StyledImg src={image} alt='character'/>
       <Content>
         <div>
           <Name>{name}</Name>
-          <Status><Indicator $isAlive={isAlive} /> {textStatus} - {species}</Status>
+          <Status><Indicator $isAlive={isAlive}/> {textStatus} - {species}</Status>
         </div>
         <InfoContainer>
           <SecondText>Gender: </SecondText>
@@ -57,17 +57,16 @@ const SecondText = styled.span`
 `;
 
 const InfoContainer = styled.div`
-color: ${colors.lightTextColor};
+  color: ${colors.lightTextColor};
 `;
 
 const Indicator = styled.div<{ $isAlive: boolean }>`
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  ${({ $isAlive }) => css`
+  ${({$isAlive}) => css`
     background-color: ${$isAlive ? colors.indicatorPositive : colors.indicatorNegative}
   `}
-  
 `;
 
 const Status = styled.span`
@@ -82,6 +81,7 @@ const Name = styled.span`
   font-weight: 600;
   color: ${colors.lightTextColor};
   cursor: pointer;
+
   &:hover {
     color: ${colors.hoverColor};
   }
@@ -107,7 +107,7 @@ const StyledImg = styled.img`
   width: 220px;
   height: 220px;
   border-radius: 20px 0 0 20px;
-  
+
   @media (max-width: 530px) {
     border-radius: 20px 20px 0 0;
   }
