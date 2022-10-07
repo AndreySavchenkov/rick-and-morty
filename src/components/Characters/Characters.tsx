@@ -1,44 +1,73 @@
 import RickAndMortyIcon from 'assets/icons/RickAndMorty';
-import { Character, Pagination } from 'components';
+import { Character, Info, Pagination } from 'components';
+import { onlyLatinValidation } from 'helper';
 import React, { FC, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import { useAppDispatch } from 'store';
 import { getCharactersThunk } from 'store/ducks/characterSlice/actions';
-import { charactersSelectors } from 'store/ducks/characterSlice/selectors';
+import {
+  getCharacters,
+  loadingCharacters,
+  pagesCharacters,
+} from 'store/ducks/characterSlice/selectors';
 import styled from 'styled-components';
 import { colors } from 'styles';
+import { Button, Modal } from 'UI';
+import spinner from 'assets/preloader/spinner.gif';
 
 type FormType = {
   name: string;
-  status: any;
-}
+  status: string;
+};
 
 const Characters: FC = () => {
+  const [_, setSearchParams] = useSearchParams({ page: '1', name: '', status: '' });
   const [query, setQuery] = useState({ page: 1, name: '', status: '' });
-  let [searchParams, setSearchParams] = useSearchParams({ page: '1', name: '' });
+  const [isShowModal, setIsShowModal] = useState(false);
+  const [characterId, setCharacterId] = useState(0);
+  const [statusValue, setStatusValue] = useState('');
+
   const dispatch = useAppDispatch();
 
-  const { control, handleSubmit } = useForm<FormType>({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<FormType>({
     defaultValues: {
       status: '',
-      name: ''
-    }
+      name: '',
+    },
+    mode: 'onChange',
   });
 
-  const characters = useSelector(charactersSelectors.characters);
-  const loading = useSelector(charactersSelectors.loadingCharacters);
-  const totalPages = useSelector(charactersSelectors?.pagesCharacters);
+  const characters = useSelector(getCharacters);
+  const loading = useSelector(loadingCharacters);
+  const totalPages = useSelector(pagesCharacters);
 
   const onSubmit = async (data: FormType) => {
-    await setQuery({ page: 1, name: data.name ? data.name : '', status: data.status });
-    setSearchParams({ page: '1', name: data.name ? data.name : '', status: data.status });
+    await setQuery({ page: 1, name: data.name ? data.name : '', status: statusValue });
+    setSearchParams({ page: '1', name: data.name ? data.name : '', status: statusValue });
+  };
 
-    console.log(data);
-  }
+  const characterClickHandler = (id: number) => {
+    setCharacterId(id);
+    setIsShowModal(true);
+  };
 
-  useEffect(() => { dispatch(getCharactersThunk(query)) }, [dispatch, query]);
+  const labelsList = [
+    { name: 'All', value: '' },
+    { name: 'Alive', value: 'alive' },
+    { name: 'Maybe Dead', value: 'unknown' },
+    { name: 'Dead', value: 'dead' },
+  ];
+
+  useEffect(() => {
+    dispatch(getCharactersThunk(query));
+  }, [dispatch, query]);
 
   return (
     <Root>
@@ -46,46 +75,145 @@ const Characters: FC = () => {
         <RickAndMortyIcon />
       </LogoContainer>
       <Form onSubmit={handleSubmit(onSubmit)}>
+        <Button
+          text="Reset"
+          action={() => {
+            reset();
+            setStatusValue('');
+          }}
+        />
         <InnerContainer>
-          <Controller control={control} name='name' render={({ field }) => (
-          <Input type='text' placeholder='Search by name..' {...field} />
-        )} />
-        <Controller control={control} name='status' render={({ field }) => (
-          <RadioContainer>
-            <StyledLabel>
-              All
-              <input {...field} type='radio' value='' />
-            </StyledLabel>
-            <StyledLabel>
-              Alive
-              <input {...field} type='radio' value='alive' />
-            </StyledLabel>
-            <StyledLabel>
-              Maybe Dead
-              <input {...field} type='radio' value='unknown' />
-            </StyledLabel>
-            <StyledLabel>
-              Dead
-              <input {...field} type='radio' value='dead' />
-            </StyledLabel>
-          </RadioContainer>
-        )} />
+          <Controller
+            control={control}
+            name="name"
+            rules={{
+              pattern: {
+                value: onlyLatinValidation,
+                message: 'Enter only latin characters',
+              },
+            }}
+            render={({ field }) => (
+              <>
+                <Input
+                  isError={Boolean(errors.name)}
+                  type="text"
+                  placeholder="Search by name.."
+                  {...field}
+                />
+                {errors.name && <ErrorMessage>{errors.name.message}</ErrorMessage>}
+              </>
+            )}
+          />
+          <Controller
+            control={control}
+            name="status"
+            render={({ field }) => (
+              <RadioContainer>
+                {labelsList.map((item) => (
+                  <StyledLabel key={item.name}>
+                    {item.name}
+                    <Radio
+                      {...field}
+                      type="radio"
+                      checked={statusValue === item.value}
+                      onChange={() => setStatusValue(item.value)}
+                      defaultChecked={item.value === ''}
+                      value={item.value}
+                    />
+                  </StyledLabel>
+                ))}
+              </RadioContainer>
+            )}
+          />
         </InnerContainer>
-        
-        <Button type='submit'>Search</Button>
+        <Button text="Search" />
       </Form>
-      <Pagination query={query} totalPages={totalPages} setQuery={setQuery} setSearchParams={setSearchParams} />
+      <Pagination
+        query={query}
+        setQuery={setQuery}
+        totalPages={totalPages}
+        setSearchParams={setSearchParams}
+      />
       <ItemsContainer>
-        {characters?.results?.map(item => (
-          <Character key={item.id} {...item} location={item.location.name} />
-        ))}
+        {loading ? (
+          <Preloader src={spinner} alt="spinner" />
+        ) : characters?.results ? (
+          characters.results.map((item) => (
+            <Character key={item.id} {...item} onClick={() => characterClickHandler(item.id)} />
+          ))
+        ) : (
+          <AlternativeText>Nothing found :(</AlternativeText>
+        )}
       </ItemsContainer>
-      <Pagination query={query} totalPages={totalPages} setQuery={setQuery} setSearchParams={setSearchParams} />
+      {totalPages > 0 && (
+        <Pagination
+          query={query}
+          setQuery={setQuery}
+          totalPages={totalPages}
+          setSearchParams={setSearchParams}
+        />
+      )}
+      {isShowModal && (
+        <Modal onClose={setIsShowModal}>
+          <Info id={characterId} />
+        </Modal>
+      )}
     </Root>
-  )
-}
+  );
+};
 
 export default Characters;
+
+const Radio = styled.input`
+  width: 1.5em;
+  height: 1.5em;
+  margin: 0;
+
+  border: 2px solid ${colors.lightTextColor};
+
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 50%;
+  cursor: pointer;
+
+  ::after {
+    content: '';
+    display: block;
+    border-radius: 50%;
+    width: 0.75em;
+    height: 0.75em;
+    margin: 3px;
+  }
+
+  :checked {
+    ::after {
+      background-color: ${colors.hoverColor};
+    }
+`;
+
+const ErrorMessage = styled.span`
+  position: absolute;
+  top: 32px;
+
+  font-size: 12px;
+  color: ${colors.indicatorNegative};
+`;
+
+const Preloader = styled.img`
+  margin: 20px auto;
+  max-width: 100px;
+  height: 100px;
+`;
+
+const AlternativeText = styled.span`
+  font-size: 22px;
+  text-align: center;
+  color: ${colors.indicatorNegative};
+
+  @media (max-width: 530px) {
+    font-size: 18px;
+  } ;
+`;
 
 const RadioContainer = styled.div`
   display: flex;
@@ -107,38 +235,23 @@ const LogoContainer = styled.div`
 `;
 
 const StyledLabel = styled.label`
-  color: ${colors.lightTextColor};
+  display: flex;
+
+  gap: 10px;
   padding: 5px;
-  border-radius: 8px;
-  cursor: pointer;
   border: 1px solid ${colors.hoverColor};
 
-  :active{
-    border: 1px solid ${colors.lightTextColor};
-  }
-`;
-
-const Button = styled.button`
-  padding: 5px 10px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
+  align-items: center;
   color: ${colors.lightTextColor};
-  background-color: ${colors.hoverColor};
-  outline: none;
-  border: none;
+  border-radius: 8px;
+  cursor: pointer;
 
-  &:active {
-    padding: 4px 9px;
+  :active {
     border: 1px solid ${colors.lightTextColor};
-  }
-
-  @media (max-width: 530px) {
-    height: 42px;
   }
 `;
 
-const Input = styled.input`
+const Input = styled.input<{ isError: boolean }>`
   border-radius: 10px;
   height: 32px;
   padding: 5px 10px;
@@ -147,13 +260,14 @@ const Input = styled.input`
   border: none;
   outline: none;
 
-  &:focus{
+  &:focus {
     padding: 4px 9px;
-    border: 1px solid ${colors.hoverColor};
+    border: 1px solid ${({ isError }) => (isError ? colors.indicatorNegative : colors.hoverColor)};
   }
 `;
 
 const Form = styled.form`
+  position: relative;
   display: flex;
   margin: 20px 0 40px;
   width: 100%;
@@ -166,30 +280,23 @@ const Form = styled.form`
   }
 `;
 
-const Loading = styled.span`
-  color: ${colors.lightTextColor};
-  font-size: 28px;
-  margin: 0 auto;
-`;
-
 const ItemsContainer = styled.div`
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
-  min-height: 100vh;
   max-width: 1216px;
   margin: 0 auto;
   gap: 16px;
-  
-  @media (max-width: 1260px) {
-    justify-content: center;
-  }
+
   @media (max-width: 650px) {
     flex-direction: column;
+    justify-content: flex-start;
     padding: 10px;
   }
 `;
 
 const Root = styled.div`
-  background-color: ${colors.darkTextColor};
+  min-height: 100vh;
   padding-bottom: 20px;
+  background-color: ${colors.darkTextColor};
 `;

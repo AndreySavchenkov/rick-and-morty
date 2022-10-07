@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from 'axios';
 
 const instance = axios.create({
   baseURL: 'https://rickandmortyapi.com/api/',
@@ -7,4 +7,3 @@ const instance = axios.create({
 
 export const getCharacters = (page: number, name: string, status: string) =>
   instance.get(`character?page=${page}&name=${name}&status=${status}`);
-

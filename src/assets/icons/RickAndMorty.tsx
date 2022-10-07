@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from 'react';
 
 const RickAndMortyIcon = () => (
   <svg
@@ -8,8 +8,8 @@ const RickAndMortyIcon = () => (
     viewBox="0 0 752.341 221"
   >
     <defs>
-      <style>{".cls-1{fill:#69C8ECFF}"}</style>
-      <style>{".cls-1{stroke:#4cff8f}"}</style>
+      <style>{'.cls-1{fill:#69C8ECFF}'}</style>
+      <style>{'.cls-1{stroke:#4cff8f}'}</style>
     </defs>
     <path
       className="cls-1"
@@ -22,6 +22,6 @@ const RickAndMortyIcon = () => (
       transform="translate(-33.66 -259)"
     />
   </svg>
-)
+);
 
 export default RickAndMortyIcon;
